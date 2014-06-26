@@ -1,4 +1,4 @@
-Collection of ArtNet related perl scripts :)
+Collection of artnet related perl scripts
 ======
 
 Fun/UniverseSinewave.pl - Generates a sinewave throughout X number of universes
