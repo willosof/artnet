@@ -6,6 +6,14 @@ use Time::HiRes qw/time usleep/;
 use Socket qw(:all);
 use POSIX ":sys_wait_h";
 
+##### her er vel det eneste man skal trenge å endre
+
+my $pixels = 54; # hver 2meters tube har 54 pixler
+my $universe_from = 1; #send fra univers
+my $universe_to = 82;  #til univers
+
+##### ...til hit ;)
+
 my $lasttime = "ha"; 
 
 socket( SOCKET, PF_INET, SOCK_DGRAM, getprotobyname("udp") )
@@ -33,7 +41,7 @@ while(1) {
 	my $tubeindex = 0;
 	usleep(5000); # Hvor kjapt skal jævelskapen gå? (dvs, hvor lenge skal den vente per pakkecycle)
 
-	for my $uni (1..82) { # Hvor mange univers har du? Vel, jeg hadde 82. Endre som man vil.
+	for my $uni ($universe_from..$universe_to) { # Hvor mange univers har du? Vel, jeg hadde 82. Endre som man vil.
 
 		my $payload  = "\x41\x72\x74\x2d\x4e\x65\x74\x00"; #artnet header
 
@@ -46,7 +54,7 @@ while(1) {
 		for my $row (0..2) { #tubes (hvor mange tuber per univers? TRE! ..det er jo maks, så.)
 			$tubeindex++;
 
-			for my $pixel (1..54) { # 54 er her antall pixler i høyden (2meters tuber)
+			for my $pixel (1..$pixels) { # 54 er her antall pixler i høyden (2meters tuber)
 
 				my $pixelnow = int(   (( sin( time() * 2  ) + 1 ) / 2) * 47 );
 				my $pixelnow2 = int(   (( sin( time() * 3  ) + 1 ) / 2) * 47 );
