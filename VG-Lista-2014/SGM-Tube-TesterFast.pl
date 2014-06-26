@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# William Viker (c) 2014
 
 use warnings;
 use strict;
