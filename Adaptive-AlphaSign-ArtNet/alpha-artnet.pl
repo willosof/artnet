@@ -7,7 +7,7 @@
 # $ cpanm Time::HiRes Data::Dumper POSIX IO::Socket::INET Socket
 # $ perl alpha-artnet.pl
 #
-# Should work fine on any linux or osx. (or maybe even windows with cygwin/perl) 
+# Should work fine on any linux or osx. (or maybe even windows with cygwin/perl)
 #
 # Remember to modify the configuration below to match your setup.
 
@@ -30,7 +30,7 @@ my $artnet_chan = 1;      # Offset Channel.
 # Create the fixture file like this:
 # Channel (offset)+0: 0-255: String index to show on led display
 # Channel (offset)+1: 0-50-150-200-255: Different colors
-# Channel (offset)+1: 0-50-150-200-255: Different font sizes/styles
+# Channel (offset)+2: 0-50-150-200-255: Different font sizes/styles
 
 ### STRINGS AVAILABLE FOR DISPLAY
 ### Remember to leave the first one blank. It's value 0 default / blackout.
@@ -158,9 +158,6 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 		for my $u (keys %{$ext}) {
 
 			my $val = $ext->{$u};
-
-			#print "   " . time(). ": Uni $u ".length(   substr($val,18,512)   )."\n";
-
 			my @bytes = split //, substr($val,18,512);
 			my @const = ();
 
@@ -173,11 +170,8 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 			}
 
 			$uni->{$u} = \@const;
-
 		}
-
 	}
-
 	else {
 		print STDERR "Invalid or incomplete artnet packet. We only support full frames!\n";
 	}
@@ -186,6 +180,7 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 
 	if (defined $strings->[$uni->{$artnet_univ}->[$artnet_chan-1]]) {
 
+		## Read out what color we want
 		my $ch = $uni->{$artnet_univ}->[$artnet_chan];
 		my $color = 1;
 
@@ -204,6 +199,8 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 		if ($ch > 200 && $ch <= 255) {
 			$color = 9;
 		}
+
+		## Read out what font style we want
 
 		$ch = $uni->{$artnet_univ}->[$artnet_chan+1];
 		my $style = 9;
@@ -224,22 +221,14 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 			$style = ">";
 		}
 
-
+		## Update the sign. update_sign() takes care of rate limiting.
 		update_sign($color, $style, $strings->[$uni->{$artnet_univ}->[$artnet_chan-1]]);
 
-		#print join(" ", @{$uni->{$artnet_univ}})."\n";
+	}	else {
 
-	}
-
-	else {
 		update_sign("1", "9", "Undefined string: ".$uni->{$artnet_univ}->[$artnet_chan-1])
+
 	}
-
-
-
-
-
-
 
 }
 
@@ -248,8 +237,8 @@ sub update_sign {
 	my ($color, $style, $text) = @_;
 
 	# Lets do a simple "checksum". The LED display wont
-	# Handle the artnet update frequency, so we'll just update
-	# the panel when things change.
+	# Handle the artnet update frequency (1/44s), so we'll
+	# just update the panel when things change.
 
 	my $new_checksum = $color.$style.$text; #lol
 
@@ -262,6 +251,7 @@ sub update_sign {
 	# Generate the payload
 
 	my $req = "\x00\x00\x00\x00\x00"; # Baud rate detection
+
 	$req .= "\x01"; ## Begin!
 	$req .= "Z"; ## all signs
 	$req .= "00"; # all addresses
@@ -276,8 +266,7 @@ sub update_sign {
 	$req .= "\x1C".$color.$text;
 	$req .= "\x04"; # stop trans
 
-	my $size = $socket->send($req);
-	#print "sent data of length $size\n";
+	my $size = $socket->send($req); # FIRE ZIE LAZORS!
 
 }
 
