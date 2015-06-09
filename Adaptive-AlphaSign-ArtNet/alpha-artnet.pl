@@ -1,5 +1,13 @@
 #!/usr/bin/perl -w
 # William Viker (c) 2015 - A script that receives artnet packages and converts it to Alpha Sign control packets.
+#
+# INSTALL:
+# $ sudo su -
+# $ curl -L https://cpanmin.us | perl - --sudo App::cpanminus
+# $ cpanm Time::HiRes Data::Dumper POSIX IO::Socket::INET Socket
+# $ perl alpha-artnet.pl
+#
+# Remember to modify the configuration below to match your setup.
 
 use warnings;
 use strict;
@@ -8,8 +16,22 @@ use Socket qw(:all);
 use Data::Dumper;
 use IO::Socket::INET;
 use POSIX ":sys_wait_h";
-my $lasttime = "ha";
-my $checksum = 0;
+
+
+### CONFIGURATION
+
+my $sign_ip     = "192.168.1.50";   # The Ethernet-Serial board IP
+my $sign_port   = "3001";           # ..and port
+my $artnet_univ = 0;      # ArtNet universe. Maybe 1? Maybe 2?
+my $artnet_chan = 1;      # Offset Channel.
+
+# Create the fixture file like this:
+# Channel (offset)+0: 0-255: String index to show on led display
+# Channel (offset)+1: 0-50-150-200-255: Different colors
+# Channel (offset)+1: 0-50-150-200-255: Different font sizes/styles
+
+### STRINGS AVAILABLE FOR DISPLAY
+### Remember to leave the first one blank. It's value 0 default / blackout.
 
 my $strings = [
   '', # blackout er nummer 0
@@ -79,11 +101,11 @@ my $strings = [
 	'Tekst 64'
 ];
 
-my $sign_ip     = "192.168.1.50";
-my $sign_port   = "3001";
-my $artnet_univ = 0;
-my $artnet_chan = 1;
 
+## DONT CHANGE ANYTHING BELOW THIS LINE ##
+
+my $lasttime = "ha";
+my $checksum = 0;
 
 my $socket = new IO::Socket::INET (
     PeerHost => $sign_ip,
