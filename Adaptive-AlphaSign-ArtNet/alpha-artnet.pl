@@ -7,6 +7,8 @@
 # $ cpanm Time::HiRes Data::Dumper POSIX IO::Socket::INET Socket
 # $ perl alpha-artnet.pl
 #
+# Should work fine on any linux or osx. (or maybe even windows with cygwin/perl) 
+#
 # Remember to modify the configuration below to match your setup.
 
 use warnings;
@@ -108,9 +110,9 @@ my $lasttime = "ha";
 my $checksum = 0;
 
 my $socket = new IO::Socket::INET (
-    PeerHost => $sign_ip,
-    PeerPort => $sign_port,
-    Proto    => 'tcp',
+    'PeerHost' => $sign_ip,
+    'PeerPort' => $sign_port,
+    'Proto'    => 'tcp',
 );
 
 die "cannot connect to the server $!\n" unless $socket;
@@ -138,15 +140,14 @@ my $ext = {}; # external universe
 
 print "Listening for ArtNet packages..\n";
 
-update_sign("7","6","Loading");
-sleep 1;
 update_sign("7","6","");
 
 my $packetnum = 0;
 
 while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
+
 	my ($port, $hisiaddr) = sockaddr_in($addr);
-	my $host = gethostbyaddr($hisiaddr, AF_INET);
+	my $host              = gethostbyaddr($hisiaddr, AF_INET);
 
 	my $payload  = "\x41\x72\x74\x2d\x4e\x65\x74\x00\x00\x50\x00\x5e\x00\x00"; #luls. only from catalyst ...
 
@@ -158,7 +159,7 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 
 			my $val = $ext->{$u};
 
-			print "   " . time(). ": Uni $u ".length(   substr($val,18,512)   )."\n";
+			#print "   " . time(). ": Uni $u ".length(   substr($val,18,512)   )."\n";
 
 			my @bytes = split //, substr($val,18,512);
 			my @const = ();
@@ -243,7 +244,12 @@ while( my $addr = recv( UDPSOCK, $input, 4096, 0 ) ) {
 }
 
 sub update_sign {
+
 	my ($color, $style, $text) = @_;
+
+	# Lets do a simple "checksum". The LED display wont
+	# Handle the artnet update frequency, so we'll just update
+	# the panel when things change.
 
 	my $new_checksum = $color.$style.$text; #lol
 
@@ -253,10 +259,10 @@ sub update_sign {
 
 	$checksum = $new_checksum;
 
+	# Generate the payload
 
-	# data to send to a server
-	my $req = "\x00\x00\x00\x00\x00";
-	$req .= "\x01";
+	my $req = "\x00\x00\x00\x00\x00"; # Baud rate detection
+	$req .= "\x01"; ## Begin!
 	$req .= "Z"; ## all signs
 	$req .= "00"; # all addresses
 	$req .= "\x02"; # start trans
@@ -271,13 +277,11 @@ sub update_sign {
 	$req .= "\x04"; # stop trans
 
 	my $size = $socket->send($req);
-	print "sent data of length $size\n";
+	#print "sent data of length $size\n";
 
 }
 
 
-
-# notify server that request has been sent
+# We'll never get here ;)
 shutdown($socket, 1);
-
 $socket->close();
