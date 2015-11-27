@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "main": "main.js",
   "scripts": {
+    "pack:osx": "npm run build:osx && electron-builder \"dist/osx/Loopline Systems.app\" --platform=osx --out=\"dist/osx\" --config=packager.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "William Viker <william.viker@gmail.com> (https://github.com/willosof)",
@@ -11,7 +12,11 @@
     "applest-atem": "^0.1.4",
     "artnet-node": "^0.1.0",
     "debug": "^2.2.0",
-    "dialog": "^0.1.8"
+    "dialog": "^0.1.8",
+    "electron-builder": "^2.3.0",
+    "express": "^4.13.3",
+    "serve-static": "^1.10.0",
+    "socket.io": "^1.3.7"
   },
   "keywords": [
     "atem",

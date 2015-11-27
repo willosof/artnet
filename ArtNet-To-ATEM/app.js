@@ -3,9 +3,15 @@ var ATEM = require('applest-atem');
 var atem = new ATEM();
 var artnetsrv = require('artnet-node/lib/artnet_server.js');
 var dialog = require('dialog');
+var http = require('http');
+var fs = require('fs');
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var serveStatic = require('serve-static');
 
 var atemIP = "10.20.30.101";
-var dmxChannel = 1;
+var dmxChannel  = 1;
 var dmxUniverse = 1;
 var dmxPhysical = 1;
 var debugArtnet = 1;
@@ -55,14 +61,33 @@ var srv = artnetsrv.listen(6454, function(msg, peer) {
 		}
 	}
 
-
-
-
-
 });
 
 atem.on('stateChanged', function(err, state) { var connected = 0; });
 
 atem.on('stateChanged', function(err, state) {
-  debug("stateChanged", state); // catch the ATEM state.
+//  debug("stateChanged", state); // catch the ATEM state.
 });
+
+app.get('/', function(req, res){
+  res.sendfile('public/index.html');
+});
+
+io.on('connection', function(socket){
+  debug("web",'a user connected');
+});
+
+app.use(serveStatic(__dirname + '/public'))
+
+http.listen(3000, function(){
+  console.log('listening on *:3000');
+});
+
+io.on('connection', function(socket){
+  socket.on('chat message', function(msg){
+    console.log('message: ' + msg);
+  });
+});
+
+
+

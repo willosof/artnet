@@ -1,2 +1,3 @@
 #!/bin/bash
-DEBUG=*,-engine*,-socket.io*,-express*,-send node app
+npm install
+DEBUG=*,-engine*,-send node app
