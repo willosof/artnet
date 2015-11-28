@@ -1,20 +1,81 @@
 <html>
 <head>
-<title>Artnet2ATEM</title>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io();
-</script>
-<script>
-  var socket = io();
-  $('form').submit(function(){
-    //socket.emit('chat message', $('#m').val());
-    //$('#m').val('');
-    return false;
-  });
-</script>
+	<title>Artnet2ATEM</title>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<link href='https://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
+
+	<style type="text/css">
+
+	body {
+		font-family: 'Roboto Condensed', sans-serif;
+	}
+	.head{
+		background-color: black;
+		color: white;
+		font-size: 15px;
+		padding: 4px;
+	}
+	td {
+		font-size: 12px;
+	}
+	table {
+		padding:0;
+		margin:0;
+	}
+	h1 {
+
+	}
+	</style>
+	<script>
+
+	$(function() {
+
+		var socket = io();
+
+		for (var universe = 0; universe <= 10; universe++) {
+
+			var unilabel = $("<tr><td class='head' colspan=32>Universe "+universe+"</td></tr>");
+			unilabel.appendTo($("#universes"));
+			var channel = 1;
+
+			for (var y = 1; y <= 16; y++) {
+
+				var tr = $("<tr></tr>");
+
+				for (var x = 1; x <= 32; x++) {
+					var td = $("<td style='color:#aaa'>" + channel + " <span id='ch"+universe+"_"+channel+"'>0</span></td>");
+					channel++;
+					td.appendTo(tr);
+				}
+
+				tr.appendTo($("#universes"));
+				
+			}
+
+		}
+
+
+		socket.on("artnet",function(msg) {
+			var ch = 1;
+			for (dati in msg.data) {
+				var data = msg.data[dati];
+				$("#ch"+msg.universe+"_"+ch).html(data).css("color","red");
+				ch++;
+			}
+		});
+
+		$('form').submit(function(){
+			//socket.emit('chat message', $('#m').val());
+			//$('#m').val('');
+			return false;
+		});
+	});
+	</script>
 </head>
 <body>
-
+	<h1>Artnet to ATEM: Live Universe Overview</h1>
+	<table id="universes">
+	</table>
 </body>
 </html>

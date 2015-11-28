@@ -1,3 +1,3 @@
 #!/bin/bash
 npm install
-DEBUG=*,-engine*,-send node app
+DEBUG=*,-socket.io*,-engine*,-send node app
